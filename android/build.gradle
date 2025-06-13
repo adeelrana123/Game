@@ -15,7 +15,12 @@ buildscript {
         classpath("com.android.tools.build:gradle")
         classpath("com.facebook.react:react-native-gradle-plugin")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin")
+        // implementation(platform("com.google.firebase:firebase-bom:33.15.0"))
+        classpath 'com.google.gms:google-services:4.4.2'
+        
     }
 }
 
 apply plugin: "com.facebook.react.rootproject"
+// id("com.android.application")
+// id("com.google.gms.google-services")
