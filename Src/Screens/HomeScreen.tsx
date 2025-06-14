@@ -103,12 +103,14 @@ useEffect(() => {
     <TouchableWithoutFeedback onPress={() => dropdownVisible && setDropdownVisible(false)}> 
     <View style={{ flex: 1 }}>
      <View style={styles.containers}>
-        <TouchableOpacity onPress={() => navigation.navigate('ProfileScreen')} style={styles.imageContainer}>
+     
+        <TouchableOpacity style={styles.imageContainer} onPress={() => navigation.navigate('EditProfileScreen')} >
   {userData?.profileImage ? (
     <Image
       source={{ uri: userData.profileImage }}
       style={styles.image}
     />
+    
   ) : (
     <View style={[styles.image, styles.placeholder]}>
       <Icon name="person" size={60} color="#888" />
@@ -121,16 +123,28 @@ useEffect(() => {
  <TouchableOpacity style={styles.topbottom}  onPress={toggleDropdown}> 
     <Entypo name="dots-three-vertical" size={30} color="white" />
  </TouchableOpacity>
- {dropdownVisible && (
-        <View style={styles.dropdownAbsolute}>
-          <TouchableOpacity onPress={handleLogout}>
-            <Text style={styles.dropdownItem}>Logout</Text>
-          </TouchableOpacity>
-        </View>
-      )}
+{dropdownVisible && (
+  <View style={styles.dropdownAbsolute}>
+    <TouchableOpacity onPress={() => navigation.navigate('ProfileScreen')}>
+      <Text style={styles.dropdownItem}>Edit Profile</Text>
+    </TouchableOpacity>
+    
+    <TouchableOpacity >
+      <Text style={styles.dropdownItem}>Setting</Text>
+    </TouchableOpacity>
+
+    <TouchableOpacity onPress={handleLogout}>
+      <Text style={styles.dropdownItem}>Logout</Text>
+    </TouchableOpacity>
+  </View>
+)}
  </View>
      
 <View style={styles.container}> 
+
+ <TouchableOpacity style={{marginVertical:10}} onPress={() => navigation.navigate('LeaderboardScreen')}>
+  <Text>LeaderBoard</Text>
+ </TouchableOpacity>
 <View style={styles.box}>
  
      <Ionicons name="book-outline" size={30} color="black" />
@@ -257,9 +271,9 @@ imageContainer: {
   marginLeft: 10,
 },
 image: {
-  width: 55,
-  height: 55,
-  borderRadius: 28,
+  width: 60,
+  height: 60,
+  borderRadius: 30,
   borderWidth: 1,
   borderColor: '#ccc',
 },

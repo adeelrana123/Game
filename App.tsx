@@ -10,6 +10,8 @@ import ProfileScreen from './Src/Screens/ProfileScreen';
 import ProjuctsScreen from './Src/Screens/ProjuctsScreen';
 import UploadVideoScreen from './Src/Screens/UploadVideoScreen';
 import SingleVideoScreen from './Src/Screens/SingleVideoScreen';
+import LeaderboardScreen from './Src/Screens/LeaderboardScreen';
+import EditProfileScreen from './Src/Screens/EditProfileScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -25,6 +27,9 @@ const App = () => {
        <Stack.Screen name="ProjuctsScreen" component={ProjuctsScreen} />
         <Stack.Screen name="UploadVideoScreen" component={UploadVideoScreen} />
        <Stack.Screen name="SingleVideoScreen" component={SingleVideoScreen} />
+       <Stack.Screen name="LeaderboardScreen" component={LeaderboardScreen} />
+       <Stack.Screen name="EditProfileScreen" component={EditProfileScreen} />
+       
         {/* This will load your tab navigation (with Home, Profile, etc.) */}
         <Stack.Screen name="MainApp" component={BottomTabNavigator} />
       </Stack.Navigator>
