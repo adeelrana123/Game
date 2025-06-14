@@ -6,7 +6,7 @@ import * as Progress from 'react-native-progress';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { Header } from '../Components/Header';
 
-const EditProfileScreen = () => {
+const ProgressScreen = () => {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [progressPercent, setProgressPercent] = useState(0);
@@ -52,7 +52,7 @@ const EditProfileScreen = () => {
   return (
     <View style={styles.fullContainer}>
       <View style={styles.headerContainer}>
-        <Header title="Progress" />
+        <Header title="My Progress" />
       </View>
 
       {loading ? (
@@ -96,7 +96,7 @@ const EditProfileScreen = () => {
   );
 };
 
-export default EditProfileScreen;
+export default ProgressScreen;
 
 const styles = StyleSheet.create({
   fullContainer: {

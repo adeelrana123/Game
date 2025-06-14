@@ -11,7 +11,10 @@ import ProjuctsScreen from './Src/Screens/ProjuctsScreen';
 import UploadVideoScreen from './Src/Screens/UploadVideoScreen';
 import SingleVideoScreen from './Src/Screens/SingleVideoScreen';
 import LeaderboardScreen from './Src/Screens/LeaderboardScreen';
-import EditProfileScreen from './Src/Screens/EditProfileScreen';
+import EditProfileScreen from './Src/Screens/ProgressScreen';
+import SettingsScreen from './Src/Screens/SettingsScreen';
+import EnrolledScreen from './Src/Screens/EnrolledScreen';
+import ProgressScreen from './Src/Screens/ProgressScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -28,8 +31,10 @@ const App = () => {
         <Stack.Screen name="UploadVideoScreen" component={UploadVideoScreen} />
        <Stack.Screen name="SingleVideoScreen" component={SingleVideoScreen} />
        <Stack.Screen name="LeaderboardScreen" component={LeaderboardScreen} />
-       <Stack.Screen name="EditProfileScreen" component={EditProfileScreen} />
-       
+       <Stack.Screen name="ProgressScreen" component={ProgressScreen} />
+       <Stack.Screen name="SettingsScreen" component={SettingsScreen} />
+      <Stack.Screen name="EnrolledScreen" component={EnrolledScreen} />
+
         {/* This will load your tab navigation (with Home, Profile, etc.) */}
         <Stack.Screen name="MainApp" component={BottomTabNavigator} />
       </Stack.Navigator>

@@ -103,8 +103,8 @@ useEffect(() => {
     <TouchableWithoutFeedback onPress={() => dropdownVisible && setDropdownVisible(false)}> 
     <View style={{ flex: 1 }}>
      <View style={styles.containers}>
-     
-        <TouchableOpacity style={styles.imageContainer} onPress={() => navigation.navigate('EditProfileScreen')} >
+      {/* onPress={() => navigation.navigate('EditProfileScreen')} */}
+        <TouchableOpacity style={styles.imageContainer} >
   {userData?.profileImage ? (
     <Image
       source={{ uri: userData.profileImage }}
@@ -125,26 +125,27 @@ useEffect(() => {
  </TouchableOpacity>
 {dropdownVisible && (
   <View style={styles.dropdownAbsolute}>
-    <TouchableOpacity onPress={() => navigation.navigate('ProfileScreen')}>
+    {/* <TouchableOpacity onPress={() => navigation.navigate('ProfileScreen')}>
       <Text style={styles.dropdownItem}>Edit Profile</Text>
-    </TouchableOpacity>
-    
-    <TouchableOpacity >
+    </TouchableOpacity> */}
+{/*     
+    <TouchableOpacity  onPress={() => navigation.navigate('SettingsScreen')}>
       <Text style={styles.dropdownItem}>Setting</Text>
-    </TouchableOpacity>
+    </TouchableOpacity> */}
 
     <TouchableOpacity onPress={handleLogout}>
       <Text style={styles.dropdownItem}>Logout</Text>
     </TouchableOpacity>
+     {/* <TouchableOpacity style={{marginVertical:10}} onPress={() => navigation.navigate('LeaderboardScreen')}>
+  <Text>LeaderBoard</Text>
+ </TouchableOpacity> */}
   </View>
 )}
  </View>
      
 <View style={styles.container}> 
 
- <TouchableOpacity style={{marginVertical:10}} onPress={() => navigation.navigate('LeaderboardScreen')}>
-  <Text>LeaderBoard</Text>
- </TouchableOpacity>
+
 <View style={styles.box}>
  
      <Ionicons name="book-outline" size={30} color="black" />
