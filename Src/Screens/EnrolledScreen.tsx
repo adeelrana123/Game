@@ -7,26 +7,36 @@ import {
   Alert,
   SafeAreaView,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Header } from '../Components/Header';
 
 const options = ['Newbie', 'Beginner', 'Advanced', 'Expert'];
 
-const EnrolledScreen = ({navigation}) => {
+const EnrolledScreen = ({ navigation }) => {
   const [selectedOption, setSelectedOption] = useState(null);
 
-  const handleSubmit = () => {
-    if (selectedOption !== null) {
-      Alert.alert('Selected Level', options[selectedOption]);
-      navigation.navigate('ProjuctsScreen')
-    } else {
-      Alert.alert('Please select a level');
+ const handleSubmit = async () => {
+  if (selectedOption !== null) {
+    const selectedLevel = options[selectedOption];
+    try {
+      await AsyncStorage.setItem('selectedLevel', selectedLevel); 
+      
+      await AsyncStorage.setItem('levelChosen', 'true'); 
+      // Navigate to home tab (MainApp)
+      navigation.replace('MainApp', { selectedLevel });
+    } catch (error) {
+      Alert.alert('Storage Error', 'Failed to save level selection.');
     }
-  };
+  } else {
+    Alert.alert('Please select a level');
+  }
+};
+
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
       <View style={styles.header}>
-        <Header  title='Select Level'/>
+        <Header title="Select Level" />
       </View>
 
       <View style={styles.container}>
@@ -55,6 +65,7 @@ const EnrolledScreen = ({navigation}) => {
 };
 
 export default EnrolledScreen;
+
 
 const styles = StyleSheet.create({
   header: {

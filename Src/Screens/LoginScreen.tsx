@@ -28,7 +28,7 @@ const [keepSignedIn, setKeepSignedIn] = useState(false);
 
     try {
       await auth().signInWithEmailAndPassword(email, password);
-      navigation.replace('MainApp');
+      navigation.replace('EnrolledScreen');
     } catch (error) {
       Alert.alert('Login Error', error.message);
     }

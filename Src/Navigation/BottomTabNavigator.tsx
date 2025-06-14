@@ -15,28 +15,25 @@ const BottomTabNavigator = () => {
         headerShown: false,
         tabBarActiveTintColor: 'green',
         tabBarInactiveTintColor: 'gray',
-       tabBarIcon: ({ color, size }) => {
-  let iconName;
+        tabBarIcon: ({ color, size }) => {
+          let iconName;
 
-  if (route.name === 'Enrolled') {
-    iconName = 'book-outline';
-  } else if (route.name === 'Home') {
-    iconName = 'home';
-  } else if (route.name === 'Projucts') {
-    iconName = 'trophy';
-  } else if (route.name === 'About Us') {
-    iconName = 'information-circle-outline';
-  } else if (route.name === 'Settings') {
-    iconName = 'settings-outline';
-  }
+          if (route.name === 'Home') {
+            iconName = 'home';
+          } else if (route.name === 'Projucts') {
+            iconName = 'trophy';
+          } else if (route.name === 'About Us') {
+            iconName = 'information-circle-outline';
+          } else if (route.name === 'Settings') {
+            iconName = 'settings-outline';
+          }
 
-  return <Icon name={iconName} size={size} color={color} />;
-}
-
+          return <Icon name={iconName} size={size} color={color} />;
+        },
       })}
     >
-        <Tab.Screen name="Home" component={HomeScreen} />
-        <Tab.Screen name="Projucts" component={ProjuctsScreen} />
+      <Tab.Screen name="Home" component={HomeScreen} />
+      <Tab.Screen name="Projucts" component={ProjuctsScreen} />
       <Tab.Screen name="Settings" component={SettingsScreen} />
       <Tab.Screen name="About Us" component={AboutUsScreen} />
     </Tab.Navigator>

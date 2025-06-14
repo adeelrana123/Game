@@ -1,27 +1,34 @@
 import React, { useEffect } from 'react';
 import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
 import auth from '@react-native-firebase/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNavigation } from '@react-navigation/native';
 
-const SplashScreen = ({ navigation }) => {
-  useEffect(() => {
-    const unsubscribe = auth().onAuthStateChanged(user => {
-      if (user) {
-        navigation.replace('MainApp'); 
-      } else {
-        navigation.replace('LoginScreen'); 
-      }
-    });
+const SplashScreen = () => {
+  const navigation = useNavigation();
 
-    return unsubscribe; 
-  }, []);
+ useEffect(() => {
+  const unsubscribe = auth().onAuthStateChanged((user) => {
+    if (!user) {
+      navigation.replace('LoginScreen');
+    } else {
+      navigation.replace('EnrolledScreen');
+    }
+  });
+
+  return unsubscribe;
+}, []);
+
 
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>Checking Authentication...</Text>
-      <ActivityIndicator size="large" color="#007AFF" />
+      <Text style={styles.logo}>My App</Text>
+      <ActivityIndicator size="large" color="#00ff00" />
     </View>
   );
 };
+
+export default SplashScreen;
 
 const styles = StyleSheet.create({
   container: {
@@ -30,11 +37,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#fff',
   },
-  text: {
+  logo: {
+    fontSize: 24,
+    fontWeight: 'bold',
     marginBottom: 20,
-    fontSize: 18,
-    color: '#333',
   },
 });
-
-export default SplashScreen;

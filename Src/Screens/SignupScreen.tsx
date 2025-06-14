@@ -61,7 +61,7 @@ const SignupScreen = ({ navigation })  => {
       });
 
     Alert.alert('Success', 'User registered successfully!');
-    navigation.replace('MainApp');
+    navigation.replace('EnrolledScreen');
   } catch (error) {
     Alert.alert('Signup Error', error.message);
   }
