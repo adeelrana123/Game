@@ -20,7 +20,7 @@ const BottomTabNavigator = () => {
 
           if (route.name === 'Home') {
             iconName = 'home';
-          } else if (route.name === 'Projucts') {
+          } else if (route.name === 'Leader board') {
             iconName = 'trophy';
           } else if (route.name === 'About Us') {
             iconName = 'information-circle-outline';
@@ -33,7 +33,7 @@ const BottomTabNavigator = () => {
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Projucts" component={ProjuctsScreen} />
+      <Tab.Screen name="Leader board" component={ProjuctsScreen} />
       <Tab.Screen name="Settings" component={SettingsScreen} />
       <Tab.Screen name="About Us" component={AboutUsScreen} />
     </Tab.Navigator>

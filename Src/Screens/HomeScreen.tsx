@@ -3,33 +3,31 @@ import {
   View,
   Text,
   StyleSheet,
-  Button,
   ActivityIndicator,
   TouchableOpacity,
   Image,
   TouchableWithoutFeedback,
+  FlatList,
 } from 'react-native';
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import Entypo from 'react-native-vector-icons/Entypo';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import { useIsFocused, useNavigation } from '@react-navigation/native';
-import * as Progress from 'react-native-progress';
+import { useIsFocused, useNavigation, useRoute } from '@react-navigation/native';
 
 const HomeScreen = () => {
   const navigation = useNavigation();
+  const route = useRoute();
   const isFocused = useIsFocused();
 
-  const [userData, setUserData] = useState(null);
+  const [videos, setVideos] = useState([]);
+  const [watchedVideos, setWatchedVideos] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [profile, setProfile] = useState({ image: null });
-  const [watchedCount, setWatchedCount] = useState(0);
-  const [totalVideos, setTotalVideos] = useState(0);
-  const [progressPercent, setProgressPercent] = useState(0);
-  const [points, setPoints] = useState(0);
-  const [activeCourse, setActiveCourse] = useState('0/0');
+  const [selectedLevel, setSelectedLevel] = useState('');
+  const [userData, setUserData] = useState(null);
   const [dropdownVisible, setDropdownVisible] = useState(false);
+  const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
 
   const fetchUserData = async () => {
     try {
@@ -39,21 +37,8 @@ const HomeScreen = () => {
 
         const childDataSnapshot = await userRef.collection('childData').limit(1).get();
         if (!childDataSnapshot.empty) {
-          setUserData(childDataSnapshot.docs[0].data());
-        }
-
-        const mainDoc = await userRef.get();
-        if (mainDoc.exists) {
-          const data = mainDoc.data();
-          const videoList = data.videoUrls || [];
-          const watched = data.watchedVideos || [];
-          const uniqueWatched = [...new Set(watched)];
-
-          setTotalVideos(videoList.length);
-          setWatchedCount(uniqueWatched.length);
-
-          const progress = videoList.length > 0 ? (uniqueWatched.length / videoList.length) * 100 : 0;
-          setProgressPercent(progress.toFixed(0));
+          const childData = childDataSnapshot.docs[0].data();
+          setUserData(childData);
         }
       }
     } catch (error) {
@@ -63,47 +48,85 @@ const HomeScreen = () => {
     }
   };
 
+  const fetchVideos = async () => {
+    try {
+      const levelFromRoute = route.params?.selectedLevel;
+      const levelFromStorage = await AsyncStorage.getItem('selectedLevel');
+      const level = levelFromRoute || levelFromStorage || 'Newbie';
+
+      setSelectedLevel(level);
+
+      const snapshot = await firestore()
+        .collection('videos')
+        .where('level', '==', level)
+        .orderBy('uploadedAt', 'desc')
+        .get();
+
+      const list = snapshot.docs.map(doc => ({
+        videoUrl: doc.data().videoUrl,
+        videoId: doc.id,
+      }));
+
+      setVideos(list);
+
+      const user = auth().currentUser;
+      if (user) {
+        const userRef = firestore().collection('users').doc(user.email);
+        await userRef.set(
+          { videoUrls: list.map(v => v.videoUrl) },
+          { merge: true }
+        );
+
+        const childDataSnap = await userRef.collection('childData').limit(1).get();
+        if (!childDataSnap.empty) {
+          const data = childDataSnap.docs[0].data();
+          setWatchedVideos(data?.watchedVideos || []);
+          setCurrentVideoIndex(data?.currentVideoIndex || 0);
+        }
+      }
+    } catch (err) {
+      console.error('❌ Fetch error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (isFocused) {
       fetchUserData();
+      fetchVideos();
     }
   }, [isFocused]);
-
-  useEffect(() => {
-    const fetchPoints = async () => {
-      const user = auth().currentUser;
-      if (user) {
-        const userDoc = await firestore().collection('users').doc(user.email).get();
-        const pointsVal = userDoc.data()?.points ?? 0;
-        const currentIndex = userDoc.data()?.currentVideoIndex ?? 0;
-        const totalVideos = userDoc.data()?.videoUrls?.length ?? 0;
-
-        setPoints(pointsVal);
-        setActiveCourse(`${currentIndex}/${totalVideos}`);
-      }
-    };
-
-    if (isFocused) {
-      fetchPoints();
-    }
-  }, [isFocused]);
-
-  const handleLogout = async () => {
-    await auth().signOut();
-    navigation.replace('LoginScreen');
-  };
 
   const toggleDropdown = () => {
     setDropdownVisible(!dropdownVisible);
   };
 
-  if (loading) {
+  const renderItem = ({ item, index }) => {
+    const isWatched = watchedVideos.includes(item.videoId);
     return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color="#0000ff" />
-      </View>
+      <TouchableOpacity
+        style={styles.videoItem}
+        onPress={() =>
+          navigation.navigate('SingleVideoScreen', {
+            videoUrl: item.videoUrl,
+            videoId: item.videoId,
+          })
+        }
+      >
+        <View style={styles.row}>
+          <Text style={styles.videoTitle}>Video {index + 1}</Text>
+          {isWatched && <Icon name="check-circle" size={24} color="green" />}
+        </View>
+      </TouchableOpacity>
     );
-  }
+  };
+
+  const totalVideos = videos.length;
+  const watchedCount = videos.filter(v => watchedVideos.includes(v.videoId)).length;
+  const progressPercent = totalVideos > 0 ? (watchedCount / totalVideos) * 100 : 0;
+
+ 
 
   return (
     <TouchableWithoutFeedback onPress={() => dropdownVisible && setDropdownVisible(false)}>
@@ -119,7 +142,7 @@ const HomeScreen = () => {
             )}
           </TouchableOpacity>
 
-          <Text style={styles.title}>{userData?.username}</Text>
+          <Text style={styles.title}>{userData?.username || 'User'}</Text>
 
           <TouchableOpacity style={styles.topbottom} onPress={toggleDropdown}>
             <Entypo name="dots-three-vertical" size={30} color="white" />
@@ -127,43 +150,43 @@ const HomeScreen = () => {
 
           {dropdownVisible && (
             <View style={styles.dropdownAbsolute}>
-              <TouchableOpacity onPress={handleLogout}>
-                <Text style={styles.dropdownItem}>Logout</Text>
+              <TouchableOpacity onPress={() => navigation.navigate('UploadVideoScreen')}>
+                <Text>Upload Video</Text>
               </TouchableOpacity>
             </View>
           )}
         </View>
+        
 
-        <View style={styles.container}>
-          <View style={styles.box}>
-            <Ionicons name="book-outline" size={30} color="black" />
-            <Text style={styles.pointsText}>{points}</Text>
-            <Text>Enrolled Courses</Text>
-          </View>
+       <View style={{ flex: 1, padding: 10 }}>
+  <Text style={[styles.titles, { color: 'black' }]}>{selectedLevel} Videos</Text>
 
-          <View style={styles.box}>
-            <Entypo name="graduation-cap" size={30} color="black" />
-            <Text style={styles.pointsText}>{activeCourse}</Text>
-            <Text>Active Courses</Text>
-          </View>
+  <View style={styles.progressContainer}>
+    <Text style={styles.progressText}>
+      Watched {watchedCount} of {totalVideos} videos
+    </Text>
+    <View style={styles.progressBarBackground}>
+      <View style={[styles.progressBarFill, { width: `${progressPercent}%` }]} />
+    </View>
+    <Text style={styles.percentageText}>
+      {Math.round(progressPercent)}% completed
+    </Text>
+  </View>
 
-          <View style={styles.box}>
-            <Entypo name="trophy" size={30} color="black" />
-            <Text style={styles.text}>Videos Completed</Text>
-            <Text style={styles.text}>{progressPercent}% Progress</Text>
-            <Progress.Bar
-              progress={progressPercent / 100}
-              width={190}
-              height={15}
-              color="#4caf50"
-              borderRadius={5}
-            />
-          </View>
+  {loading ? (
+    <ActivityIndicator size="large" color="#0000ff" style={{ marginTop: 20 }} />
+  ) : totalVideos > 0 ? (
+    <FlatList
+      data={videos}
+      renderItem={renderItem}
+      keyExtractor={(item, index) => index.toString()}
+      contentContainerStyle={{ paddingVertical: 10 }}
+    />
+  ) : (
+    <Text style={styles.noVideos}>No videos found.</Text>
+  )}
+</View>
 
-          <TouchableOpacity onPress={() => navigation.navigate('UploadVideoScreen')}>
-            <Text>Upload Video</Text>
-          </TouchableOpacity>
-        </View>
       </View>
     </TouchableWithoutFeedback>
   );
@@ -183,52 +206,17 @@ const styles = StyleSheet.create({
     fontSize: 24,
     color: 'white',
     fontWeight: 'bold',
-    textAlign: 'center',
-    justifyContent: 'center',
     marginLeft: 20,
+  },
+   titles: {
+    fontSize: 24,
+    color: 'white',
+    fontWeight: 'bold',
+    // marginLeft: 20,
   },
   topbottom: {
     marginLeft: 'auto',
     marginRight: 10,
-  },
-  container: {
-    flex: 1,
-    paddingHorizontal: 20,
-    backgroundColor: '#f5f5f5',
-    alignItems: 'center',
-  },
-  center: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  dropdownAbsolute: {
-    position: 'absolute',
-    top: 60,
-    right: 10,
-    backgroundColor: 'white',
-    borderRadius: 5,
-    padding: 10,
-    elevation: 5,
-    zIndex: 1000,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-  },
-  dropdownItem: {
-    fontSize: 14,
-    color: 'black',
-    paddingVertical: 5,
-  },
-  box: {
-    width: '60%',
-    height: 150,
-    borderWidth: 1,
-    borderColor: 'black',
-    marginVertical: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   imageContainer: {
     marginLeft: 10,
@@ -245,13 +233,62 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#eee',
   },
-  pointsText: {
-    fontSize: 24,
-    fontWeight: 'bold',
+  dropdownAbsolute: {
+    position: 'absolute',
+    top: 60,
+    right: 10,
+    backgroundColor: 'white',
+    borderRadius: 5,
+    padding: 10,
+    elevation: 5,
+    zIndex: 1000,
   },
-  text: {
-    fontSize: 18,
-    marginBottom: 8,
+  progressContainer: {
+    marginVertical: 10,
+  },
+  progressText: {
+    fontSize: 14,
+  },
+  progressBarBackground: {
+    height: 10,
+    width: '100%',
+    backgroundColor: '#ddd',
+    borderRadius: 5,
+    marginVertical: 5,
+  },
+  progressBarFill: {
+    height: 10,
+    backgroundColor: 'green',
+    borderRadius: 5,
+  },
+  percentageText: {
+    fontSize: 14,
+    color: '#555',
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    backgroundColor: '#fff',
+    marginVertical: 5,
+    borderRadius: 8,
+    elevation: 2,
+  },
+  videoTitle: {
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  noVideos: {
+    textAlign: 'center',
+    color: 'gray',
+    marginTop: 30,
+  },
+  center: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 

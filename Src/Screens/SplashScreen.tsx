@@ -1,24 +1,26 @@
 import React, { useEffect } from 'react';
 import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
-import auth from '@react-native-firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 
 const SplashScreen = () => {
   const navigation = useNavigation();
 
- useEffect(() => {
-  const unsubscribe = auth().onAuthStateChanged((user) => {
-    if (!user) {
-      navigation.replace('LoginScreen');
-    } else {
-      navigation.replace('EnrolledScreen');
-    }
-  });
+  useEffect(() => {
+    const checkFirstLaunch = async () => {
+      const isFirstLaunch = await AsyncStorage.getItem('hasLaunched');
 
-  return unsubscribe;
-}, []);
+      if (isFirstLaunch === null) {
+        // First time launch
+        await AsyncStorage.setItem('hasLaunched', 'true');
+        navigation.replace('EnrolledScreen'); // first-time screen
+      } else {
+        navigation.replace('MainApp'); // home screen
+      }
+    };
 
+    checkFirstLaunch();
+  }, []);
 
   return (
     <View style={styles.container}>

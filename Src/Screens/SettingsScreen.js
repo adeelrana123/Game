@@ -10,7 +10,7 @@ export default function SettingsScreen() {
      
     { title: 'Edit Profile', icon: 'person', screen: 'ProfileScreen' },
     { title: 'My Progress', icon: 'bar-chart', screen: 'ProgressScreen' },
-     { title: 'Leader Board', icon: 'emoji-events', screen: 'LeaderboardScreen' },
+    //  { title: 'Leader Board', icon: 'emoji-events', screen: 'LeaderboardScreen' },
    { title: 'Courses', icon: 'menu-book', screen: 'EnrolledScreen' },
     { title: 'Privacy Policy', icon: 'security', screen: 'PrivacyPolicyScreen' }, 
     { title: 'Terms of Service', icon: 'description', screen: 'TermsScreen' },  

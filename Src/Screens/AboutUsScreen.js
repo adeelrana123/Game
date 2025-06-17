@@ -7,10 +7,10 @@ const AboutUsScreen = () => {
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.heading}>About Us</Text>
 
-      {/* Video Icon */}
-      <View style={styles.iconContainer}>
+     
+      {/* <View style={styles.iconContainer}>
         <Icon name="play-circle-outline" size={100} color="#f39c12" />
-      </View>
+      </View> */}
 
       <Text style={styles.paragraph}>
         Welcome to <Text style={styles.appName}>KidVerse</Text> – a joyful and safe space where children can learn, laugh, and grow through videos designed just for them.

@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, FlatList, Image } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+  FlatList,
+  Image,
+} from 'react-native';
 import firestore from '@react-native-firebase/firestore';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { Header } from '../Components/Header';
@@ -11,13 +18,9 @@ const LeaderboardScreen = () => {
   useEffect(() => {
     const fetchTopUsers = async () => {
       try {
-        const snapshot = await firestore()
-          .collection('users')
-          .orderBy('points', 'desc')
-          .limit(10)
-          .get();
+        const snapshot = await firestore().collection('users').get();
 
-        const top = await Promise.all(
+        const usersWithChildData = await Promise.all(
           snapshot.docs.map(async doc => {
             const user = doc.data();
             const childSnapshot = await firestore()
@@ -31,16 +34,28 @@ const LeaderboardScreen = () => {
               const childData = childSnapshot.docs[0].data();
               return {
                 ...user,
-                username: childData.username ?? user.username,
+                username: childData.username ?? user.username ?? 'Unnamed',
                 profileImage: childData.profileImage ?? null,
+                points: childData.points ?? user.points ?? 0,
               };
             }
 
-            return user;
+            return {
+              ...user,
+              username: user.username ?? 'Unnamed',
+              profileImage: null,
+              points: user.points ?? 0,
+            };
           })
         );
 
-        setTopUsers(top);
+        const filteredUsers = usersWithChildData.filter(user => user.username && user.points !== undefined);
+
+        const sortedTop = filteredUsers
+          .sort((a, b) => b.points - a.points)
+          .slice(0, 10);
+
+        setTopUsers(sortedTop);
       } catch (error) {
         console.error('🔥 Error fetching leaderboard:', error);
       }
@@ -63,27 +78,46 @@ const LeaderboardScreen = () => {
         </View>
       ) : (
         <View style={styles.container}>
-          <Text style={styles.heading}>🏆 Top 10 Users</Text>
+          <Text style={styles.heading}>🏅 Top 10 Users</Text>
           <FlatList
             data={topUsers}
-            scrollEnabled={false}
             keyExtractor={(item, index) => index.toString()}
-            renderItem={({ item, index }) => (
-              <View style={styles.userCard}>
-                <Text style={styles.rank}>{index + 1}.</Text>
-                {item.profileImage ? (
-                  <Image source={{ uri: item.profileImage }} style={styles.userImage} />
-                ) : (
-                  <View style={styles.placeholderImage}>
-                    <Icon name="person" size={40} color="#888" />
+            renderItem={({ item, index }) => {
+              let backgroundColor = '#fff';
+              let medalIcon = null;
+
+              if (index === 0) {
+                backgroundColor = '#FFD700'; // Gold
+                medalIcon = '🥇';
+              } else if (index === 1) {
+                backgroundColor = '#C0C0C0'; // Silver
+                medalIcon = '🥈';
+              } else if (index === 2) {
+                backgroundColor = '#CD7F32'; // Bronze
+                medalIcon = '🥉';
+              }
+
+              return (
+                <View style={[styles.userCard, { backgroundColor }]}>
+                  <Text style={styles.rank}>
+                    {medalIcon ? medalIcon : `${index + 1}.`}
+                  </Text>
+
+                  {item.profileImage ? (
+                    <Image source={{ uri: item.profileImage }} style={styles.userImage} />
+                  ) : (
+                    <View style={styles.placeholderImage}>
+                      <Icon name="person" size={40} color="#888" />
+                    </View>
+                  )}
+
+                  <View>
+                    <Text style={styles.userName}>{item.username}</Text>
+                    <Text style={styles.userPoints}>{item.points} Points</Text>
                   </View>
-                )}
-                <View>
-                  <Text style={styles.userName}>{item.username ?? 'Unnamed'}</Text>
-                  <Text style={styles.userPoints}>{item.points} Points</Text>
                 </View>
-              </View>
-            )}
+              );
+            }}
           />
         </View>
       )}
@@ -118,16 +152,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 15,
-    backgroundColor: '#fff',
     padding: 10,
     borderRadius: 8,
     elevation: 2,
   },
   rank: {
-    fontSize: 18,
+    fontSize: 22,
     fontWeight: 'bold',
     marginRight: 10,
-    width: 20,
+    width: 40,
+    textAlign: 'center',
   },
   userImage: {
     width: 50,
@@ -136,9 +170,9 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   placeholderImage: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
     backgroundColor: '#ddd',
     justifyContent: 'center',
     alignItems: 'center',
@@ -150,6 +184,6 @@ const styles = StyleSheet.create({
   },
   userPoints: {
     fontSize: 16,
-    color: '#666',
+    color: '#333',
   },
 });

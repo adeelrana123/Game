@@ -24,21 +24,28 @@ const ProgressScreen = () => {
         const childDataSnapshot = await userRef.collection('childData').limit(1).get();
         if (!childDataSnapshot.empty) {
           const childData = childDataSnapshot.docs[0].data();
+          console.log('👤 Child Data:', childData);
           setUserData(childData);
+          setPoints(childData.points ?? 0);
+
+          const watched = [...new Set(childData?.watchedVideos ?? [])];
+          console.log('🎥 Watched Videos:', watched);
+
+          const userDoc = await userRef.get();
+          if (userDoc.exists) {
+            const data = userDoc.data();
+            console.log('📄 User Main Document:', data);
+            const totalVideos = Array.isArray(data?.videoUrls) ? data.videoUrls.length : 0;
+            console.log('📼 Total Videos:', totalVideos);
+
+           const progress = totalVideos > 0
+  ? Math.min((watched.length / totalVideos) * 100, 100)
+  : 0;
+            console.log('✅ Calculated Progress:', progress);
+            setProgressPercent(progress.toFixed(0));
+            setActiveCourse(`${childData.currentVideoIndex ?? 0}/${totalVideos}`);
+          }
         }
-
-        const userDoc = await userRef.get();
-        if (userDoc.exists) {
-          const data = userDoc.data();
-          const watched = [...new Set(data?.watchedVideos ?? [])];
-          const totalVideos = data?.videoUrls?.length ?? 0;
-          const progress = totalVideos > 0 ? (watched.length / totalVideos) * 100 : 0;
-
-          setProgressPercent(progress.toFixed(0));
-          setActiveCourse(`${data.currentVideoIndex ?? 0}/${totalVideos}`);
-          setPoints(data.points ?? 0);
-        }
-
       } catch (error) {
         console.error('🔥 Error fetching user data:', error);
       }
@@ -86,7 +93,7 @@ const ProgressScreen = () => {
                   style={{ alignSelf: 'stretch' }}
                 />
               </View>
-              <Text style={styles.stat}>🎓 Active Course: {activeCourse}</Text>
+
               <Text style={styles.stat}>⭐ Points: {points}</Text>
             </View>
           )}
